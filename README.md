@@ -6,7 +6,11 @@
 
 This is a desktop GUI application to convert HDR videos to SDR using FFmpeg. The application lets you select an input video (or drag and drop one), live-preview the tonemapped result frame by frame, fine-tune the conversion, and convert single files or a whole queue while monitoring progress.
 
-This community fork enables every feature without a license key or activation.
+## Feature Access
+
+This fork starts with every feature enabled. It has no paid feature tier.
+
+You do not need to buy, enter, or activate a product key. The app does not contact a license server at startup.
 
 ## Under the Hood
 
@@ -53,6 +57,6 @@ This community fork enables every feature without a license key or activation.
 3. Install the application dependencies: `.venv\Scripts\python -m pip install -r requirements.txt`.
 4. Start the application: `.venv\Scripts\python src\main.pyw`.
 
-## License
+## Software License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+The MIT License applies to this source code. This legal license does not limit access to app features. See [LICENSE](LICENSE) for the full terms.
