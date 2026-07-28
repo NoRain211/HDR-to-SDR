@@ -11,14 +11,13 @@ from utils import (get_video_properties, get_maxcll, TONEMAP, clear_maxfall_cach
                    is_gpu_only_tonemapper, vulkan_libplacebo_available,
                    VIDEO_FILE_FILTER)
 from settings import load_settings, save_settings
-from licensing import InvalidKeyError, DeviceLimitError, NetworkError, LicenseError
+from version import APP_VERSION
 from PIL import Image, ImageTk
 from tkinterdnd2 import DND_FILES, TkinterDnD
 import logging
 import threading
 from concurrent.futures import Future, ThreadPoolExecutor
 
-from dialogs import _LicenseDialog, _UpdateDialog, activate_license
 from preview import (
     DEFAULT_MIN_SIZE, PREVIEW_SIZE, INITIAL_PANE_SIZE,
     _MIN_PANE_W, _RESIZE_DEBOUNCE_MS, _PREVIEW_WIDTH_RESERVE,
@@ -28,12 +27,11 @@ from preview import (
 from batch import _BatchMixin
 
 # Register the split-out modules under their src.* names so that
-# patch('src.dialogs.X'), patch('src.preview.X'), patch('src.batch.X')
-# target the same module objects that the code actually runs in.
+# patch('src.preview.X') and patch('src.batch.X') target the same module
+# objects that the code actually runs in.
 # Without this, Python would load a second copy under each dotted name.
 import sys as _sys
 _sys.modules.update({
-    'src.dialogs': _sys.modules['dialogs'],
     'src.preview': _sys.modules['preview'],
     'src.batch':   _sys.modules['batch'],
 })
@@ -45,14 +43,12 @@ _sys.modules.update({
 # loaded as a bare top-level module).
 if 'src' in _sys.modules:
     _src_pkg = _sys.modules['src']
-    setattr(_src_pkg, 'dialogs', _sys.modules['dialogs'])
     setattr(_src_pkg, 'preview', _sys.modules['preview'])
     setattr(_src_pkg, 'batch', _sys.modules['batch'])
     del _src_pkg
 del _sys
 
 # Re-export webbrowser so existing patches (patch('src.gui.webbrowser')) still resolve.
-# (The name was importable from this module before the dialogs split.)
 webbrowser = webbrowser  # noqa: F811
 
 
@@ -72,7 +68,7 @@ class HDRConverterGUI(_BatchMixin, _HDRPreviewMixin):
 
     # Output containers the user can pick.
     _OUTPUT_FORMATS = ['MP4', 'MKV', 'MOV']
-    _ISSUES_URL = 'https://github.com/TORlN/HDR-to-SDR/issues'
+    _ISSUES_URL = 'https://github.com/NoRain211/HDR-to-SDR/issues'
     _INPUT_FORMAT_MAP = {'mp4': 'MP4', 'm4v': 'MP4', 'mov': 'MOV', 'mkv': 'MKV'}
 
     # Quality slider ranges as (worst, best): left end = smaller file, right = better.
@@ -100,7 +96,6 @@ class HDRConverterGUI(_BatchMixin, _HDRPreviewMixin):
         """Initialize the GUI and set up all components."""
         self.root = root
         self._licensed = licensed
-        from updater import APP_VERSION
         self.root.title(f"HDR to SDR Converter v{APP_VERSION}")
         self._set_window_icon()
         self.root.after(0, self._set_window_icon)
@@ -199,8 +194,6 @@ class HDRConverterGUI(_BatchMixin, _HDRPreviewMixin):
 
         self.check_ffmpeg_available()
 
-        self.root.after(3000, self._start_update_check)
-
     # ── Window icon ────────────────────────────────────────────────────────────
 
     def _set_window_icon(self) -> None:
@@ -232,39 +225,8 @@ class HDRConverterGUI(_BatchMixin, _HDRPreviewMixin):
             return False
         return True
 
-    # ── Auto-update ────────────────────────────────────────────────────────────
-
-    def _start_update_check(self) -> None:
-        if os.environ.get('HDRSDR_DEV_SHOW_UPDATE_DIALOG') == '1':
-            from updater import APP_VERSION, RELEASES_URL
-            self._show_update_dialog(
-                APP_VERSION, '99.0.0', 'https://example.com/HDR_to_SDR_Setup.exe',
-                RELEASES_URL)
-            return
-
-        def _worker() -> None:
-            from updater import check_for_update, APP_VERSION
-            result = check_for_update()
-            if result:
-                new_ver, url, release_url = result
-                self.root.after(0, lambda: self._show_update_dialog(
-                    APP_VERSION, new_ver, url, release_url))
-        threading.Thread(target=_worker, daemon=True).start()
-
-    def _show_update_dialog(self, current_ver: str, new_ver: str, url: str,
-                             release_url: str) -> None:
-        _UpdateDialog(self.root, current_ver, new_ver, url, release_url)
-
     def _open_issues_page(self) -> None:
         webbrowser.open(self._ISSUES_URL)
-
-    # ── Licensing ──────────────────────────────────────────────────────────────
-
-    def _open_license_dialog(self) -> None:
-        dlg = _LicenseDialog(self.root)
-        self.root.wait_window(dlg)
-        if dlg.activated:
-            self._apply_license_state(True)
 
     def _apply_license_state(self, licensed: bool) -> None:
         """Enable or disable Pro-only widgets and rebuild interactable_elements."""
@@ -564,19 +526,12 @@ class HDRConverterGUI(_BatchMixin, _HDRPreviewMixin):
         self.error_label = ttk.Label(self.control_frame, text='', foreground='red')
         self.error_label.grid(row=7, column=0, columnspan=3, sticky=tk.W)
 
+        # Kept as an empty layout slot for compatibility with saved/tested UI
+        # state. The unlocked build never adds activation controls to it.
         self._pro_banner = ttk.Frame(self.control_frame)
         self._pro_banner.grid(row=8, column=0, columnspan=3,
-                               sticky=tk.W + tk.E, pady=(6, 2))
+                              sticky=tk.W + tk.E, pady=(6, 2))
         self._pro_banner.grid_remove()
-        ttk.Label(
-            self._pro_banner,
-            text='Quality, batch, container and 12-bit require Pro.',
-            foreground='gray',
-        ).grid(row=0, column=0, sticky=tk.W)
-        ttk.Button(
-            self._pro_banner, text='Activate License',
-            command=self._open_license_dialog,
-        ).grid(row=0, column=1, padx=(12, 0))
 
         self.button_frame = ttk.Frame(self.image_frame)
         self.button_frame.grid(row=2, column=0, columnspan=3, pady=(5, 0), sticky=tk.N)

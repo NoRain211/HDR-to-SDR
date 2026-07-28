@@ -1,9 +1,5 @@
 # HDR to SDR Converter
 
-![Tests](https://github.com/NoRain211/HDR-to-SDR/actions/workflows/python-tests.yml/badge.svg)
-![Coverage floor](https://img.shields.io/badge/coverage-90%25%20floor-brightgreen)
-![License](https://img.shields.io/github/license/NoRain211/HDR-to-SDR)
-
 This is a desktop GUI application to convert HDR videos to SDR using FFmpeg. The application lets you select an input video (or drag and drop one), live-preview the tonemapped result frame by frame, fine-tune the conversion, and convert single files or a whole queue while monitoring progress.
 
 ## Feature Access
@@ -12,13 +8,19 @@ This fork starts with every feature enabled. It has no paid feature tier.
 
 You do not need to buy, enter, or activate a product key. The app does not contact a license server at startup.
 
+## Privacy
+
+The desktop app sends no analytics, crash reports, license checks, or automatic update requests. It makes no background network requests.
+
+The **Report an Issue** link opens the fork's GitHub issue page only when you select it.
+
 ## Under the Hood
 
 - **GPU/CPU dual pipeline**: tonemapping runs on the GPU via libplacebo (Vulkan) when available, falling back to a pure-CPU ffmpeg filter chain — GPU tonemapping roughly halves conversion time on capable hardware.
 - **Real color science**: gamut conversion runs through a generated BT.2020→BT.709 3D LUT (tetrahedral interpolation) instead of approximate gamma math, on both the CPU and GPU paths.
 - **Dolby Vision (profile 5) RPU handling** and automatic hardware encoder detection (NVENC / AMF / QSV) with CPU fallback.
-- **Tested and typed**: 13 test modules run against Python 3.10–3.13 (headless, via Xvfb, to exercise the real Tkinter GUI) on every push, gated by a 90% coverage floor and a zero-error `pyright` pass on `src/`.
-- **Signed, installable releases**: PyInstaller build + Inno Setup installer, code-signed via Azure Trusted Signing, with an in-app auto-updater.
+- **Tested and typed**: 11 test modules run against Python 3.10–3.13 (headless, via Xvfb, to exercise the real Tkinter GUI) on every push, gated by a 90% coverage floor and a zero-error `pyright` pass on `src/`.
+- **AIO Windows installer**: The release includes the compiled app, Python runtime, Tk/TkDND, LUT data, FFmpeg, and FFprobe.
 
 ## Features
 
@@ -52,11 +54,28 @@ You do not need to buy, enter, or activate a product key. The app does not conta
 
 ## Installation
 
+### Windows AIO
+
+1. Download `HDR_to_SDR_Setup_3.1.6_AIO.exe` from the fork's release page.
+2. Run the installer.
+
+The AIO installer does not require a separate Python or FFmpeg installation.
+
+### Run from Source
+
 1. Install Python 3.10 or newer and FFmpeg.
 2. Clone this repository and create a virtual environment: `python -m venv .venv`.
 3. Install the application dependencies: `.venv\Scripts\python -m pip install -r requirements.txt`.
 4. Start the application: `.venv\Scripts\python src\main.pyw`.
 
+## Other Platforms
+
+The Python source can run on Linux and macOS. Native releases must be built and tested on each target operating system.
+
+The Windows installer and bundled FFmpeg executables do not work on Linux or macOS. Each native build needs platform-specific TkDND and FFmpeg files.
+
 ## Software License
 
 The MIT License applies to this source code. This legal license does not limit access to app features. See [LICENSE](LICENSE) for the full terms.
+
+The AIO release also includes FFmpeg under GPLv3. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for details.

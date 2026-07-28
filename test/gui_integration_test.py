@@ -89,7 +89,7 @@ class _GuiTestBase(unittest.TestCase):
 class TestConstruction(_GuiTestBase):
 
     def test_window_title_and_minsize(self):
-        from updater import APP_VERSION
+        from version import APP_VERSION
         self.assertEqual(self.root.title(), f"HDR to SDR Converter v{APP_VERSION}")
         # Min size is computed from the controls (issue 3) so they can't be
         # clipped: at least the default floor, and wide enough for the controls.
@@ -2073,6 +2073,7 @@ class TestDropToQueue(unittest.TestCase):
                          ['C:/a.mkv', 'C:/b.mkv'])
 
 
+@unittest.skip("license and update dialogs were removed")
 class TestCenterOverMaster(unittest.TestCase):
     """_center_over_master is the shared sizing/centering routine behind both
     _LicenseDialog and _UpdateDialog's __init__ -- they used to each inline
@@ -2113,6 +2114,7 @@ class TestCenterOverMaster(unittest.TestCase):
 
 
 @unittest.skipUnless(_TK_OK, _SKIP)
+@unittest.skip("license activation was removed")
 class TestLicenseDialog(unittest.TestCase):
     """Tests for the _LicenseDialog Toplevel."""
 
@@ -2279,6 +2281,7 @@ class TestLicenseDialog(unittest.TestCase):
 
 
 @unittest.skipUnless(_TK_OK, _SKIP)
+@unittest.skip("automatic updates were removed")
 class TestUpdateDialog(unittest.TestCase):
     """Tests for the _UpdateDialog Toplevel's changelog link."""
 
@@ -2439,7 +2442,7 @@ class TestFeedbackLink(_GuiTestBase):
     def test_click_opens_github_issues_page(self):
         with patch('src.gui.webbrowser') as mock_wb:
             self.gui._open_issues_page()
-        mock_wb.open.assert_called_once_with('https://github.com/TORlN/HDR-to-SDR/issues')
+        mock_wb.open.assert_called_once_with('https://github.com/NoRain211/HDR-to-SDR/issues')
 
 
 if __name__ == '__main__':
