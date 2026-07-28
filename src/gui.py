@@ -96,7 +96,7 @@ class HDRConverterGUI(_BatchMixin, _HDRPreviewMixin):
     # of being removed from the list, per _apply_tonemap_choices.
     _GPU_ONLY_SUFFIX = " (GPU Only)"
 
-    def __init__(self, root: "TkinterDnD.Tk", licensed: bool = False) -> None:
+    def __init__(self, root: "TkinterDnD.Tk", licensed: bool = True) -> None:
         """Initialize the GUI and set up all components."""
         self.root = root
         self._licensed = licensed
